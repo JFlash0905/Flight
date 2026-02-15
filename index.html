@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Felis NBA GM — Offline (HTML)</title>
+  <title>Felis NBA GM — Real Teams + Real Players Only</title>
   <style>
     :root{ --bg:#0b0f14; --card:#111827; --muted:#94a3b8; --txt:#e5e7eb; --accent:#22c55e; --warn:#f59e0b; --bad:#ef4444; --line:#1f2937; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family: ui-sans-serif,system-ui,-apple-system,"PingFang TC","Noto Sans TC",Arial; background:linear-gradient(180deg,#06080c 0%, #0b0f14 40%, #06080c 100%); color:var(--txt); }
-    .wrap{ max-width:1100px; margin:0 auto; padding:14px 14px 90px; }
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px 14px 94px; }
     header{ display:flex; gap:12px; align-items:center; justify-content:space-between; position:sticky; top:0; background:rgba(11,15,20,.92); backdrop-filter: blur(10px); border-bottom:1px solid var(--line); padding:10px 14px; z-index:10; }
     .title{ display:flex; flex-direction:column; gap:2px; }
     .title h1{ margin:0; font-size:16px; letter-spacing:.2px; }
@@ -30,13 +30,14 @@
     button.primary{ border-color:rgba(34,197,94,.5); background:rgba(34,197,94,.14); }
     button.danger{ border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.12); }
     button.ghost{ background:transparent; }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
     .kpi{ display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; }
     @media (max-width: 520px){ .kpi{ grid-template-columns: repeat(2, 1fr); } }
     .k{ border:1px solid var(--line); border-radius:16px; padding:10px; background:rgba(11,18,32,.55); }
     .k .v{ font-size:18px; font-weight:700; }
     .k .l{ font-size:12px; color:var(--muted); }
     table{ width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:16px; }
-    th, td{ padding:10px 10px; font-size:12px; border-bottom:1px solid var(--line); }
+    th, td{ padding:10px 10px; font-size:12px; border-bottom:1px solid var(--line); vertical-align:top;}
     th{ text-align:left; color:var(--muted); background:rgba(11,18,32,.55); position:sticky; top:0; z-index:2; }
     tr:last-child td{ border-bottom:none; }
     .tag{ display:inline-flex; gap:6px; align-items:center; font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
@@ -44,57 +45,60 @@
     .tag.warn{ border-color:rgba(245,158,11,.45); color:#ffedd5; background:rgba(245,158,11,.10); }
     .tag.bad{ border-color:rgba(239,68,68,.45); color:#fee2e2; background:rgba(239,68,68,.10); }
     .muted{ color:var(--muted); }
-    .log{ max-height:260px; overflow:auto; border:1px solid var(--line); border-radius:16px; padding:10px; background:rgba(11,18,32,.55); font-size:12px; }
+    .log{ max-height:280px; overflow:auto; border:1px solid var(--line); border-radius:16px; padding:10px; background:rgba(11,18,32,.55); font-size:12px; }
     .log p{ margin:0 0 8px; color:#cbd5e1; }
     .split{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media (max-width: 720px){ .split{ grid-template-columns:1fr; } }
     .hint{ font-size:12px; color:var(--muted); line-height:1.5; }
-    .right{ margin-left:auto; }
   </style>
 </head>
 <body>
 <header>
   <div class="title">
-    <h1>Felis NBA GM（離線版）</h1>
-    <div class="sub">賽季模擬｜交易｜薪資｜成長｜名單匯入（真實球隊/球員名稱）</div>
+    <h1>Felis NBA GM（真實球隊 + 真實球員強制）</h1>
+    <div class="sub">季後賽｜多季循環｜交易｜養傷｜疲勞｜自動存檔｜隊伍鎖定</div>
   </div>
   <div class="row">
-    <span class="pill" id="pillSeason">Season: 2025-26</span>
-    <span class="pill" id="pillDay">Day: 1</span>
-    <span class="pill" id="pillMode">Offline-first</span>
+    <span class="pill" id="pillSeason">Season: —</span>
+    <span class="pill" id="pillDay">Day: —</span>
+    <span class="pill" id="pillLock">Team: —</span>
   </div>
 </header>
 
 <div class="wrap">
   <div class="grid">
-    <div class="card" id="panelMain">
-      <!-- dynamic -->
-    </div>
+    <div class="card" id="panelMain"></div>
+
     <div class="card">
       <h2>控制台</h2>
       <div class="row" style="margin-bottom:10px;">
         <select id="selMyTeam"></select>
-        <button class="primary" id="btnNewSeason">新賽季</button>
-        <button id="btnSave">儲存</button>
-        <button class="ghost" id="btnLoad">讀取</button>
-        <button class="danger" id="btnReset">重置</button>
+        <button class="primary" id="btnLockTeam">鎖定球隊</button>
+        <button class="primary" id="btnNewSeason">進入新賽季（休賽季）</button>
+        <button id="btnSave">手動儲存</button>
+        <button class="ghost" id="btnLoad">讀取存檔</button>
+        <button class="danger" id="btnReset">重置（清掉鎖定/存檔）</button>
       </div>
+
       <div class="kpi" style="margin-bottom:10px;">
         <div class="k"><div class="v" id="kpiMyOvr">—</div><div class="l">我隊 OVR</div></div>
         <div class="k"><div class="v" id="kpiCap">—</div><div class="l">薪資 / 上限</div></div>
         <div class="k"><div class="v" id="kpiRec">—</div><div class="l">戰績</div></div>
-        <div class="k"><div class="v" id="kpiInj">—</div><div class="l">傷兵</div></div>
+        <div class="k"><div class="v" id="kpiReal">—</div><div class="l">真實名單檢查</div></div>
       </div>
+
       <div class="row" style="margin-bottom:10px;">
         <button class="primary" id="btnSim1">模擬 1 天</button>
         <button class="primary" id="btnSim7">模擬 7 天</button>
-        <button class="primary" id="btnSimToEnd">模擬到季末</button>
+        <button class="primary" id="btnSimToEnd">模擬到季末 + 季後賽</button>
       </div>
+
       <div class="hint" style="margin-bottom:10px;">
-        ✅ 你要「更真實」：把各隊完整名單貼到「匯入名單」即可（支援多隊）。<br/>
-        ⚠️ iPad 飛航模式：不要重新整理/搜尋；用書籤或「加入主畫面」開啟。
+        ✅ 你要求「全真實」：本作會阻止模擬，直到你匯入各隊真實球員名單。<br/>
+        ✅ iPad 飛航：用「加入主畫面」開，不要重新整理/搜尋頁面。
       </div>
-      <h2 style="margin-top:8px;">事件紀錄</h2>
+
+      <h2>事件紀錄</h2>
       <div class="log" id="log"></div>
     </div>
   </div>
@@ -111,16 +115,9 @@
 </nav>
 
 <script>
-/**
- * Felis NBA GM — Single-file offline-first GM simulator
- * - Real 30 NBA teams (names)
- * - Real player names included as "core" dataset (expand via import)
- * - Salary cap, contracts, progression, injuries, standings, schedule
- *
- * NOTE: NBA rosters change. For full opening-night 2025-26 rosters, use official list/PDF and import.
- */
-
-// ---------- Utilities ----------
+/* =========================
+   Core Helpers
+========================= */
 const $ = (q)=>document.querySelector(q);
 const $$ = (q)=>Array.from(document.querySelectorAll(q));
 const rnd = (a,b)=>Math.random()*(b-a)+a;
@@ -129,14 +126,28 @@ const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
 const fmt$ = (m)=>`$${m.toFixed(1)}M`;
 const uid = ()=>Math.random().toString(36).slice(2,10);
 
-function log(msg, tone=""){
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function log(msg){
   const el = $("#log");
   const p = document.createElement("p");
   p.textContent = msg;
   el.prepend(p);
 }
+function autosave(){
+  try{ localStorage.setItem("felis_nba_gm_save", JSON.stringify(state)); }catch(e){}
+}
+function save(){ autosave(); log("💾 已儲存（本機 localStorage）。"); }
+function load(){
+  const raw = localStorage.getItem("felis_nba_gm_save");
+  if(!raw){ alert("沒有找到存檔。"); return; }
+  state = JSON.parse(raw);
+  log("📂 已讀取存檔。");
+  render();
+}
 
-// ---------- Real team list (30) ----------
+/* =========================
+   Real Teams (30)
+========================= */
 const TEAMS = [
   {id:"ATL", name:"Atlanta Hawks", conf:"East", div:"Southeast"},
   {id:"BOS", name:"Boston Celtics", conf:"East", div:"Atlantic"},
@@ -170,165 +181,225 @@ const TEAMS = [
   {id:"WAS", name:"Washington Wizards", conf:"East", div:"Southeast"},
 ];
 
-// ---------- Core real-player dataset (starter cores) ----------
-// IMPORTANT: This is a playable core, NOT guaranteed full current rosters. Use Import to make it 100% complete.
-const CORE_PLAYERS = [
-  // BOS
-  P("Jayson Tatum","SF","BOS",94,27,46.0), P("Jaylen Brown","SG","BOS",90,29,43.0), P("Kristaps Porzingis","C","BOS",87,30,30.0), P("Jrue Holiday","PG","BOS",84,35,32.0), P("Derrick White","SG","BOS",83,31,19.0),
-  // GSW
-  P("Stephen Curry","PG","GSW",93,37,52.0), P("Draymond Green","PF","GSW",82,35,24.0), P("Klay Thompson","SG","GSW",80,35,18.0), P("Jonathan Kuminga","SF","GSW",82,23,12.0), P("Andrew Wiggins","SF","GSW",79,30,26.0),
-  // LAL
-  P("LeBron James","SF","LAL",92,41,51.0), P("Anthony Davis","PF","LAL",91,32,43.0), P("D'Angelo Russell","PG","LAL",78,30,18.0), P("Austin Reaves","SG","LAL",81,27,13.0), P("Rui Hachimura","PF","LAL",77,28,16.0),
-  // OKC
-  P("Shai Gilgeous-Alexander","PG","OKC",95,27,37.0), P("Chet Holmgren","C","OKC",86,24,11.0), P("Jalen Williams","SF","OKC",86,24,6.0), P("Lu Dort","SG","OKC",79,26,17.0), P("Josh Giddey","PG","OKC",78,23,8.0),
-  // DEN
-  P("Nikola Jokic","C","DEN",97,31,51.0), P("Jamal Murray","PG","DEN",86,29,36.0), P("Michael Porter Jr.","SF","DEN",82,27,33.0), P("Aaron Gordon","PF","DEN",81,30,23.0), P("Kentavious Caldwell-Pope","SG","DEN",78,32,14.0),
-  // DAL
-  P("Luka Doncic","PG","DAL",96,27,45.0), P("Kyrie Irving","PG","DAL",88,34,41.0), P("P.J. Washington","PF","DAL",79,27,15.0), P("Dereck Lively II","C","DAL",78,22,5.0), P("Tim Hardaway Jr.","SG","DAL",75,33,17.0),
-  // MIL
-  P("Giannis Antetokounmpo","PF","MIL",96,31,48.0), P("Damian Lillard","PG","MIL",90,35,45.0), P("Khris Middleton","SF","MIL",82,34,29.0), P("Brook Lopez","C","MIL",80,38,24.0), P("Bobby Portis","PF","MIL",78,31,12.0),
-  // PHX
-  P("Kevin Durant","SF","PHX",94,37,51.0), P("Devin Booker","SG","PHX",92,29,49.0), P("Bradley Beal","SG","PHX",85,32,46.0), P("Jusuf Nurkic","C","PHX",78,31,18.0), P("Grayson Allen","SG","PHX",76,30,9.0),
-  // MIN
-  P("Anthony Edwards","SG","MIN",92,24,42.0), P("Karl-Anthony Towns","C","MIN",87,30,49.0), P("Rudy Gobert","C","MIN",83,33,41.0), P("Mike Conley","PG","MIN",77,38,10.0), P("Jaden McDaniels","SF","MIN",78,25,13.0),
-  // SAC
-  P("De'Aaron Fox","PG","SAC",88,28,35.0), P("Domantas Sabonis","C","SAC",90,30,41.0), P("Keegan Murray","SF","SAC",80,25,8.0), P("Malik Monk","SG","SAC",79,28,10.0), P("Harrison Barnes","SF","SAC",75,33,18.0),
-  // SAS
-  P("Victor Wembanyama","C","SAS",90,22,12.0), P("Devin Vassell","SG","SAS",83,25,29.0), P("Keldon Johnson","SF","SAS",78,26,19.0), P("Jeremy Sochan","PF","SAS",77,23,6.0), P("Tre Jones","PG","SAS",74,26,10.0),
-  // NYK
-  P("Jalen Brunson","PG","NYK",89,29,26.0), P("Julius Randle","PF","NYK",85,31,30.0), P("OG Anunoby","SF","NYK",82,28,35.0), P("Josh Hart","SF","NYK",79,30,18.0), P("Mitchell Robinson","C","NYK",78,28,15.0),
-  // PHI
-  P("Joel Embiid","C","PHI",94,32,52.0), P("Tyrese Maxey","PG","PHI",88,25,35.0), P("Tobias Harris","PF","PHI",78,33,39.0), P("Kelly Oubre Jr.","SF","PHI",76,30,8.0), P("De'Anthony Melton","SG","PHI",75,27,8.0),
-  // MIA
-  P("Jimmy Butler","SF","MIA",87,36,45.0), P("Bam Adebayo","C","MIA",88,28,34.0), P("Tyler Herro","SG","MIA",81,26,29.0), P("Terry Rozier","PG","MIA",79,31,23.0), P("Duncan Robinson","SG","MIA",75,31,19.0),
-  // CLE
-  P("Donovan Mitchell","SG","CLE",90,29,37.0), P("Darius Garland","PG","CLE",85,26,34.0), P("Evan Mobley","PF","CLE",84,24,11.0), P("Jarrett Allen","C","CLE",82,28,20.0), P("Max Strus","SF","CLE",75,29,15.0),
-  // …其餘球隊先用「基礎名單」補齊，確保30隊可開季
+/* =========================
+   Player Model (Real-only enforced)
+========================= */
+function P(name,pos,team,ovr,age,salary,years){
+  return {
+    id: uid(),
+    name, pos, team,
+    ovr: clamp(parseInt(ovr,10)||75, 40, 99),
+    age: clamp(parseInt(age,10)||26, 18, 45),
+    salary: clamp(parseFloat(salary)||5.0, 0.5, 90.0),
+    years: clamp(parseInt(years,10)||1, 1, 5),
+    pot: clamp((parseInt(ovr,10)||75) + rndi(0,8), 50, 99),
+    inj: 0,
+    rehab: "normal", // normal | fast | force
+    fatigue: 0
+  };
+}
+
+// 「真實球員檢查」：我們不判斷是不是NBA現役（那要外部資料），但我們可以強制：
+// - 不能包含 "Free Agent"、"Starter"、"Role"、"#1234" 之類假名
+// - 必須有至少兩個字母、且不含明顯佔位關鍵字
+const FAKE_NAME_PATTERNS = [
+  /free agent/i, /starter/i, /backup/i, /role/i, /rookie/i,
+  /#\d{3,}/, /test/i, /dummy/i
 ];
-
-// Fill missing teams with generic-but-plausible rosters so season can run.
-// You can overwrite them via Import with full real rosters.
-function makeGenericRoster(teamId){
-  const names = [
-    "Starter Guard","Starter Wing","Starter Forward","Starter Big","Sixth Man",
-    "Role Guard","3&D Wing","Bench Big","Rookie","Vet"
-  ];
-  const base = rndi(71,78);
-  return names.map((n,i)=>P(`${TEAMS.find(t=>t.id===teamId).name.split(" ")[0]} ${n}`, ["PG","SG","SF","PF","C"][i%5], teamId, clamp(base + (4-(i%5)),68,82), rndi(20,34), rnd(1.5,18.0)));
+function isFakeName(name){
+  const s = String(name||"").trim();
+  if(s.length < 4) return true;
+  if(FAKE_NAME_PATTERNS.some(re=>re.test(s))) return true;
+  return false;
 }
 
-function P(name,pos,team,ovr,age,salary){
-  return { id: uid(), name, pos, team, ovr, age, salary, years: rndi(1,4), pot: clamp(ovr + rndi(0,8), 60, 99), inj: 0 };
-}
+/* =========================
+   State
+========================= */
+const SAVE_KEY = "felis_nba_gm_save";
+const LOCK_KEY = "felis_my_team_locked";
 
-// ---------- Game state ----------
 let state = null;
+let currentTab = "team";
 
 function newState(){
-  const players = [];
-  const haveTeam = new Set(CORE_PLAYERS.map(p=>p.team));
-  // add core players
-  CORE_PLAYERS.forEach(p=>players.push({...p}));
-  // add generic rosters for missing teams
-  TEAMS.forEach(t=>{
-    if(!haveTeam.has(t.id)){
-      makeGenericRoster(t.id).forEach(p=>players.push(p));
-    }
-  });
-
   const teams = TEAMS.map(t=>({
     ...t,
-    w:0,l:0, pf:0, pa:0,
-    cap: 142.0, // simplified cap
-    cash: 20.0, // owner cash for bonuses
+    w:0,l:0,pf:0,pa:0,
+    cap: 142.0,
+    medical: rndi(2,4), // 醫療等級 1~5（越高恢復越快）
   }));
 
+  // 初始不內建任何球員（符合你「全真實」要求：你必須匯入真實名單）
+  // 但保留一個空陣容結構，匯入後才能開季模擬。
+  const players = [];
+  const fa = []; // 自由市場：只接受你匯入或到期合約流入，不再亂生假人
+
   return {
-    ver: "1.0",
+    ver:"2.0-real-only",
     season: "2025-26",
+    year: 2025,
     day: 1,
     myTeam: "GSW",
     teams,
     players,
+    fa,
     schedule: makeSchedule(TEAMS.map(t=>t.id), 82),
-    fa: [],
-    logSeed: Date.now(),
+    playoffsDone: false,
   };
 }
 
 function teamPlayers(teamId){
   return state.players.filter(p=>p.team===teamId).sort((a,b)=>b.ovr-a.ovr);
 }
-
+function payroll(teamId){
+  return teamPlayers(teamId).reduce((s,p)=>s+p.salary,0);
+}
 function teamOVR(teamId){
-  const roster = teamPlayers(teamId);
+  const roster = teamPlayers(teamId).filter(p=>p.inj===0); // 受傷不算進即戰力（更像真實）
   const top = roster.slice(0,8);
   const avg = top.reduce((s,p)=>s+p.ovr,0)/Math.max(1,top.length);
   return Math.round(avg);
 }
-
-function payroll(teamId){
-  return teamPlayers(teamId).reduce((s,p)=>s+p.salary,0);
+function sortStandings(a,b){
+  if(b.w!==a.w) return b.w-a.w;
+  const diffA = a.pf-a.pa, diffB = b.pf-b.pa;
+  return diffB-diffA;
 }
 
-// ---------- Schedule ----------
+/* =========================
+   Schedule: daily games, no "empty days"
+========================= */
 function makeSchedule(teamIds, gamesPerTeam=82){
-  // simple randomized schedule: each day has ~8 games
-  const days = [];
-  const totalDays = 170; // approx season length
-  const gamesTarget = Math.floor((teamIds.length * gamesPerTeam)/2);
-  let gamesMade = 0;
+  const need = {};
+  teamIds.forEach(id=>need[id]=gamesPerTeam);
 
-  while(days.length < totalDays){
-    const dayGames = [];
-    // pick random matchups
-    const pool = [...teamIds].sort(()=>Math.random()-0.5);
-    while(pool.length >= 2 && dayGames.length < 9 && gamesMade < gamesTarget){
-      const a = pool.pop();
-      const b = pool.pop();
-      if(a===b) continue;
-      dayGames.push({home:a, away:b});
-      gamesMade++;
+  const days = [];
+  const totalDays = 175;
+  for(let d=0; d<totalDays; d++){
+    const today = [];
+    const pool = teamIds.filter(id=>need[id]>0).sort(()=>Math.random()-0.5);
+    const targetGames = Math.min(rndi(6,10), Math.floor(pool.length/2));
+
+    const used = new Set();
+    let tries = 0;
+    while(today.length < targetGames && tries < 300){
+      tries++;
+      const a = pool[rndi(0,pool.length-1)];
+      const b = pool[rndi(0,pool.length-1)];
+      if(!a || !b || a===b) continue;
+      if(used.has(a) || used.has(b)) continue;
+      if(need[a]<=0 || need[b]<=0) continue;
+
+      const home = Math.random()<0.5 ? a : b;
+      const away = home===a ? b : a;
+
+      today.push({home, away});
+      used.add(a); used.add(b);
+      need[a]--; need[b]--;
     }
-    days.push(dayGames);
+
+    if(today.length===0){
+      const left = teamIds.filter(id=>need[id]>0);
+      if(left.length>=2){
+        const a = left[0], b = left[1];
+        today.push({home:a, away:b});
+        need[a]--; need[b]--;
+      }
+    }
+
+    days.push(today);
   }
   return days;
 }
 
-// ---------- Simulation ----------
+/* =========================
+   Real-only Gate (blocks sim until all teams imported)
+========================= */
+function realRosterCheck(){
+  // 必須每隊至少 13 人（你可以改成15更嚴）
+  const problems = [];
+  for(const t of TEAMS){
+    const roster = teamPlayers(t.id);
+    if(roster.length < 13) problems.push(`${t.id} 少於13人（${roster.length}）`);
+    for(const p of roster){
+      if(isFakeName(p.name)) problems.push(`${t.id} 出現疑似假名：${p.name}`);
+    }
+  }
+  // FA 也不能是假名（如果你匯入FA）
+  for(const p of state.fa){
+    if(isFakeName(p.name)) problems.push(`FA 假名：${p.name}`);
+  }
+  return problems;
+}
+
+function ensureCanSim(){
+  const locked = localStorage.getItem(LOCK_KEY);
+  if(!locked){ return {ok:false, msg:"請先選隊並按「鎖定球隊」。（鎖定後除非重置不能換）"}; }
+
+  const probs = realRosterCheck();
+  if(probs.length>0){
+    return {ok:false, msg:"真實名單未完成，已阻止模擬。\n\n需要處理：\n- " + probs.slice(0,12).join("\n- ") + (probs.length>12?`\n...（共${probs.length}項）`:"") + "\n\n請到「匯入名單」貼上各隊真實球員名單。"};
+  }
+  return {ok:true, msg:"ok"};
+}
+
+/* =========================
+   Injury / Rehab / Fatigue
+========================= */
+function injuryRecoveryRate(teamId, rehab){
+  const med = state.teams.find(t=>t.id===teamId)?.medical ?? 3;
+  const base = 1 + (med-3)*0.15; // 3=>1.0
+  if(rehab==="fast") return base * 1.35;
+  if(rehab==="force") return base * 0.10;
+  return base;
+}
+function reinjuryRisk(p){
+  let risk = 0.008;
+  if(p.rehab==="fast") risk += 0.02;
+  if(p.rehab==="force") risk += 0.07;
+  if(p.fatigue > 70) risk += 0.02;
+  return risk;
+}
+
+/* =========================
+   Simulation
+========================= */
 function simulateDay(){
+  const gate = ensureCanSim();
+  if(!gate.ok){ alert(gate.msg); return; }
+
   const dayIndex = state.day - 1;
   const games = state.schedule[dayIndex] || [];
   if(games.length===0){
-    log(`Day ${state.day}: 沒有賽程。`, "muted");
+    log(`Day ${state.day}: 沒有賽程（理論上很少發生）。`);
     state.day++;
+    autosave();
     return;
   }
 
   for(const g of games){
     playGame(g.away, g.home);
   }
-
-  // daily progression + injuries update
   dailyUpdates();
-
   state.day++;
+  autosave();
 }
 
 function playGame(awayId, homeId){
   const awayOVR = teamOVR(awayId);
-  const homeOVR = teamOVR(homeId) + 2; // home advantage
+  const homeOVR = teamOVR(homeId) + 2; // 主場優勢
   const awayInj = teamPlayers(awayId).filter(p=>p.inj>0).length;
   const homeInj = teamPlayers(homeId).filter(p=>p.inj>0).length;
 
-  const awayAdj = awayOVR - awayInj*1.2;
-  const homeAdj = homeOVR - homeInj*1.2;
+  const awayAdj = awayOVR - awayInj*1.0;
+  const homeAdj = homeOVR - homeInj*1.0;
 
-  const pHome = 1/(1+Math.pow(10, (awayAdj-homeAdj)/12)); // logistic-ish
+  const pHome = 1/(1+Math.pow(10, (awayAdj-homeAdj)/12));
   const homeWin = Math.random() < pHome;
 
-  const base = 108;
-  const spread = (homeAdj - awayAdj) * 1.1 + rnd(-8,8);
+  const base = 109;
+  const spread = (homeAdj - awayAdj) * 1.1 + rnd(-7,7);
   const homePts = Math.round(base + spread + rnd(-6,6));
   const awayPts = Math.round(base - spread + rnd(-6,6));
 
@@ -336,7 +407,6 @@ function playGame(awayId, homeId){
   const tAway = state.teams.find(t=>t.id===awayId);
 
   if(homeWin){ tHome.w++; tAway.l++; } else { tAway.w++; tHome.l++; }
-
   tHome.pf += homePts; tHome.pa += awayPts;
   tAway.pf += awayPts; tAway.pa += homePts;
 
@@ -350,57 +420,166 @@ function playGame(awayId, homeId){
 }
 
 function dailyUpdates(){
-  // injuries recover & random injuries
-  for(const p of state.players){
-    if(p.inj > 0) p.inj = Math.max(0, p.inj - 1);
-    // small chance of injury if plays (top 10)
-    const top10 = teamPlayers(p.team).slice(0,10).some(x=>x.id===p.id);
-    if(top10 && p.inj===0 && Math.random()<0.006){
-      p.inj = rndi(3,21);
-      log(`🚑 傷病：${p.name}（${p.team}）缺陣 ${p.inj} 天`, "warn");
+  // 疲勞 + 受傷 + 復發 + 養傷
+  for(const t of TEAMS){
+    const roster = teamPlayers(t.id);
+    const top10 = roster.slice(0,10).map(p=>p.id);
+    for(const p of roster){
+      const plays = top10.includes(p.id);
+
+      // 養傷恢復
+      if(p.inj > 0){
+        const rate = injuryRecoveryRate(p.team, p.rehab);
+        p.inj = Math.max(0, p.inj - 1);
+        if(Math.random() < (rate - 1)) p.inj = Math.max(0, p.inj - 1);
+        p.fatigue = clamp(p.fatigue - rndi(3,7), 0, 100);
+        if(p.inj===0) p.rehab = "normal";
+        continue;
+      }
+
+      // 疲勞變化
+      if(plays){
+        p.fatigue = clamp(p.fatigue + rndi(2,5), 0, 100);
+      }else{
+        p.fatigue = clamp(p.fatigue - rndi(3,7), 0, 100);
+      }
+
+      // 受傷機率：基礎 + 疲勞加成
+      if(plays){
+        const base = 0.0038;
+        const extra = (p.fatigue>85) ? 0.007 : (p.fatigue>65 ? 0.002 : 0);
+        if(Math.random() < (base + extra)){
+          p.inj = rndi(3,21);
+          log(`🚑 傷病：${p.name}（${p.team}）缺陣 ${p.inj} 天`);
+        }
+      }
+
+      // 復發（尤其強行/加速）
+      if(plays && Math.random() < reinjuryRisk(p)){
+        const sev = (p.rehab==="force") ? rndi(6,18) : rndi(3,10);
+        p.inj = sev;
+        log(`♻️ 復發：${p.name}（${p.team}）再次缺陣 ${p.inj} 天`);
+      }
     }
-    // micro progression: young improves, old declines
-    const age = p.age;
-    let delta = 0;
-    if(age <= 24) delta = (Math.random()<0.18) ? 1 : 0;
-    else if(age >= 33) delta = (Math.random()<0.12) ? -1 : 0;
-    else delta = (Math.random()<0.10) ? 1 : 0;
-
-    // cap by potential
-    if(delta>0 && p.ovr < p.pot) p.ovr += delta;
-    if(delta<0) p.ovr = Math.max(60, p.ovr + delta);
-  }
-
-  // basic free agents pool
-  if(state.fa.length < 40 && Math.random()<0.25){
-    const fa = P(`Free Agent ${uid().toUpperCase()}` , ["PG","SG","SF","PF","C"][rndi(0,4)], "FA", rndi(68,80), rndi(20,34), rnd(1.0,12.0));
-    fa.years = 1;
-    state.fa.push(fa);
   }
 }
 
-// ---------- Trades ----------
+/* =========================
+   Playoffs & Multi-season Loop
+========================= */
+function winProb(aId,bId){
+  const aO = teamOVR(aId);
+  const bO = teamOVR(bId);
+  return 1/(1+Math.pow(10,(bO-aO)/12));
+}
+function seriesWinner(aId,bId,bestOf=7){
+  const need = Math.ceil(bestOf/2);
+  let a=0,b=0;
+  while(a<need && b<need){
+    if(Math.random() < winProb(aId,bId)) a++; else b++;
+  }
+  return a>b ? aId : bId;
+}
+function bracketWinner(seedIds){
+  const q1 = seriesWinner(seedIds[0], seedIds[7], 7);
+  const q2 = seriesWinner(seedIds[3], seedIds[4], 7);
+  const q3 = seriesWinner(seedIds[1], seedIds[6], 7);
+  const q4 = seriesWinner(seedIds[2], seedIds[5], 7);
+  const s1 = seriesWinner(q1, q2, 7);
+  const s2 = seriesWinner(q3, q4, 7);
+  return seriesWinner(s1, s2, 7);
+}
+function runPlayoffs(){
+  const east = state.teams.filter(t=>t.conf==="East").sort(sortStandings).slice(0,8);
+  const west = state.teams.filter(t=>t.conf==="West").sort(sortStandings).slice(0,8);
+  const winnerEast = bracketWinner(east.map(t=>t.id));
+  const winnerWest = bracketWinner(west.map(t=>t.id));
+  const champ = seriesWinner(winnerEast, winnerWest, 7);
+  log(`🏆 冠軍：${TEAMS.find(t=>t.id===champ).name}`);
+  state.playoffsDone = true;
+}
+
+/* =========================
+   Offseason (Season-to-season realism)
+   - Contract years decrease
+   - Expiring deals -> Free Agency
+   - Seasonal decline (NOT daily) so Curry won't "season-end collapse"
+========================= */
+function offseasonAdvance(){
+  // reset records
+  for(const t of state.teams){ t.w=0; t.l=0; t.pf=0; t.pa=0; }
+  state.day = 1;
+  state.playoffsDone = false;
+
+  // season year advance
+  state.year += 1;
+  state.season = `${state.year}-${String((state.year+1)%100).padStart(2,"0")}`;
+
+  // age, contracts
+  const toFA = [];
+  for(const p of state.players){
+    p.age += 1;
+    p.years = Math.max(0, p.years - 1);
+
+    // seasonal decline: 老將小幅下滑，超巨更保護
+    if(p.age >= 33){
+      const protect = p.ovr >= 90;
+      const drop = protect ? rndi(0,1) : rndi(0,2);
+      p.ovr = Math.max(60, p.ovr - drop);
+    } else if(p.age <= 24){
+      // young growth
+      const up = (p.ovr < p.pot) ? rndi(0,2) : 0;
+      p.ovr = Math.min(p.pot, p.ovr + up);
+    }
+
+    // fatigue reset-ish
+    p.fatigue = clamp(p.fatigue - rndi(10,25), 0, 100);
+
+    if(p.years===0){
+      toFA.push(p);
+    }
+  }
+
+  // move expiring to FA
+  if(toFA.length>0){
+    for(const p of toFA){
+      p.team = "FA";
+      p.years = 1;
+      p.rehab = "normal";
+      p.inj = 0;
+      state.fa.push(p);
+    }
+    state.players = state.players.filter(p=>p.team!=="FA");
+    log(`🧾 休賽季：${toFA.length} 位到期球員進入自由市場。`);
+  }
+
+  // rebuild schedule
+  state.schedule = makeSchedule(TEAMS.map(t=>t.id), 82);
+  autosave();
+}
+
+/* =========================
+   Trade (real-only players)
+========================= */
 function proposeTrade(giveIds, getIds, otherTeamId){
   const my = state.myTeam;
   const mine = state.players.filter(p=>giveIds.includes(p.id) && p.team===my);
   const theirs = state.players.filter(p=>getIds.includes(p.id) && p.team===otherTeamId);
 
-  const myVal = mine.reduce((s,p)=>s+p.ovr + p.pot*0.1 - p.age*0.2,0);
-  const thVal = theirs.reduce((s,p)=>s+p.ovr + p.pot*0.1 - p.age*0.2,0);
+  const myVal = mine.reduce((s,p)=>s+p.ovr + p.pot*0.08 - p.age*0.15,0);
+  const thVal = theirs.reduce((s,p)=>s+p.ovr + p.pot*0.08 - p.age*0.15,0);
 
   const mySal = mine.reduce((s,p)=>s+p.salary,0);
   const thSal = theirs.reduce((s,p)=>s+p.salary,0);
 
-  // simplified salary matching: allow within 25%
-  const salaryOk = (mySal>0 && Math.abs(mySal-thSal)/mySal <= 0.25) || (mySal===0);
+  const salaryOk = (mySal>0 && Math.abs(mySal-thSal)/mySal <= 0.25);
 
   // acceptance rule
   const diff = myVal - thVal;
-  const accept = salaryOk && diff >= -3.0; // they can "overpay" slightly
+  const accept = salaryOk && diff >= -2.5;
 
   return {accept, myVal, thVal, mySal, thSal, salaryOk};
 }
-
 function executeTrade(giveIds, getIds, otherTeamId){
   const my = state.myTeam;
   for(const pid of giveIds){
@@ -411,21 +590,19 @@ function executeTrade(giveIds, getIds, otherTeamId){
     const p = state.players.find(x=>x.id===pid);
     if(p && p.team===otherTeamId) p.team = my;
   }
+  autosave();
 }
 
-// ---------- Import ----------
-/**
- * Import format (paste into textarea):
- * TEAM: GSW
- * Stephen Curry|PG|93|37|52.0|2
- * Draymond Green|PF|82|35|24.0|2
- * ---
- * TEAM: LAL
- * LeBron James|SF|92|41|51.0|1
- * ...
- *
- * Fields: name|pos|ovr|age|salary(M)|years
- */
+/* =========================
+   Import (Real players you provide)
+   Format:
+   TEAM: GSW
+   Stephen Curry|PG|96|37|52.0|2
+   ...
+   ---
+   TEAM: LAL
+   ...
+========================= */
 function importRoster(text){
   const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0);
   let team = null;
@@ -440,9 +617,7 @@ function importRoster(text){
   for(const line of lines){
     if(/^TEAM\s*:/i.test(line)){
       team = line.split(":")[1]?.trim().toUpperCase();
-      if(!TEAMS.some(t=>t.id===team)){
-        throw new Error(`未知隊伍代碼：${team}`);
-      }
+      if(!TEAMS.some(t=>t.id===team)) throw new Error(`未知隊伍代碼：${team}`);
       removeExisting(team);
       continue;
     }
@@ -450,29 +625,26 @@ function importRoster(text){
     if(!team) continue;
 
     const parts = line.split("|").map(s=>s.trim());
-    if(parts.length < 5) continue;
+    if(parts.length < 6) continue;
     const [name,pos,ovrS,ageS,salS,yearsS] = parts;
-    const ovr = clamp(parseInt(ovrS,10) || 75, 40, 99);
-    const age = clamp(parseInt(ageS,10) || 26, 18, 45);
-    const sal = clamp(parseFloat(salS) || 5.0, 0.8, 80.0);
-    const years = clamp(parseInt(yearsS,10) || 1, 1, 5);
 
-    const p = P(name,pos,team,ovr,age,sal);
-    p.years = years;
-    p.pot = clamp(ovr + rndi(0,8), 50, 99);
-    state.players.push(p);
+    if(isFakeName(name)) throw new Error(`偵測到疑似假名：${name}（請只匯入真實球員姓名）`);
+
+    state.players.push(P(name,pos,team,ovrS,ageS,salS,yearsS));
     added++;
   }
 
-  log(`📥 匯入完成：新增 ${added} 人、移除舊名單 ${removed} 人（只替換你標記 TEAM 的隊伍）`);
+  log(`📥 匯入完成：新增 ${added} 人、移除舊名單 ${removed} 人（只替換你寫 TEAM 的隊伍）`);
+  autosave();
 }
 
-// ---------- UI ----------
-let currentTab = "team";
-
+/* =========================
+   UI Rendering
+========================= */
 function render(){
   $("#pillSeason").textContent = `Season: ${state.season}`;
   $("#pillDay").textContent = `Day: ${state.day}`;
+  $("#pillLock").textContent = `Team: ${state.myTeam}`;
 
   // team selector
   const sel = $("#selMyTeam");
@@ -485,15 +657,25 @@ function render(){
     sel.appendChild(opt);
   }
 
-  // KPIs
-  const my = state.myTeam;
-  $("#kpiMyOvr").textContent = teamOVR(my);
-  $("#kpiCap").textContent = `${fmt$(payroll(my))} / $${state.teams.find(t=>t.id===my).cap.toFixed(0)}M`;
-  const myTeamObj = state.teams.find(t=>t.id===my);
-  $("#kpiRec").textContent = `${myTeamObj.w}-${myTeamObj.l}`;
-  $("#kpiInj").textContent = teamPlayers(my).filter(p=>p.inj>0).length;
+  const locked = localStorage.getItem(LOCK_KEY);
+  sel.disabled = !!locked;
+  $("#btnLockTeam").disabled = !!locked;
 
-  // main panel per tab
+  // KPIs
+  $("#kpiMyOvr").textContent = teamOVR(state.myTeam);
+  $("#kpiCap").textContent = `${fmt$(payroll(state.myTeam))} / $${state.teams.find(t=>t.id===state.myTeam).cap.toFixed(0)}M`;
+  const myTeamObj = state.teams.find(t=>t.id===state.myTeam);
+  $("#kpiRec").textContent = `${myTeamObj.w}-${myTeamObj.l}`;
+
+  const probs = realRosterCheck();
+  $("#kpiReal").innerHTML = probs.length===0 ? `<span class="tag good">OK</span>` : `<span class="tag bad">${probs.length} 問題</span>`;
+
+  // enable/disable sim buttons based on gate
+  const gate = ensureCanSim();
+  $("#btnSim1").disabled = !gate.ok;
+  $("#btnSim7").disabled = !gate.ok;
+  $("#btnSimToEnd").disabled = !gate.ok;
+
   if(currentTab==="team") renderTeam();
   if(currentTab==="league") renderLeague();
   if(currentTab==="trade") renderTrade();
@@ -504,16 +686,19 @@ function render(){
 function renderTeam(){
   const my = state.myTeam;
   const roster = teamPlayers(my);
-  const html = `
-    <h2>我的球隊：${TEAMS.find(t=>t.id===my).name} <span class="tag good">OVR ${teamOVR(my)}</span></h2>
+  const med = state.teams.find(t=>t.id===my)?.medical ?? 3;
+
+  $("#panelMain").innerHTML = `
+    <h2>我的球隊：${TEAMS.find(t=>t.id===my).name} <span class="tag good">OVR ${teamOVR(my)}</span> <span class="tag">Medical ${med}/5</span></h2>
     <div class="row" style="margin-bottom:10px;">
       <span class="tag">薪資：${fmt$(payroll(my))}</span>
       <span class="tag">上限：$${state.teams.find(t=>t.id===my).cap.toFixed(0)}M</span>
       <span class="tag">戰績：${state.teams.find(t=>t.id===my).w}-${state.teams.find(t=>t.id===my).l}</span>
     </div>
+
     <table>
       <thead><tr>
-        <th>球員</th><th>Pos</th><th>OVR</th><th>Age</th><th>Salary</th><th>Yrs</th><th>狀態</th>
+        <th>球員</th><th>Pos</th><th>OVR</th><th>Age</th><th>Salary</th><th>Yrs</th><th>Fatigue</th><th>傷病/養傷策略</th>
       </tr></thead>
       <tbody>
         ${roster.map(p=>`
@@ -524,16 +709,38 @@ function renderTeam(){
             <td>${p.age}</td>
             <td>${fmt$(p.salary)}</td>
             <td>${p.years}</td>
-            <td>${p.inj>0 ? `<span class="tag warn">傷 ${p.inj}d</span>` : `<span class="tag good">健康</span>`}</td>
+            <td><span class="tag ${p.fatigue>80?"bad":p.fatigue>60?"warn":"good"}">${p.fatigue}</span></td>
+            <td>
+              ${p.inj>0 ? `<span class="tag warn">OUT ${p.inj}d</span>` : `<span class="tag good">Healthy</span>`}
+              <div style="margin-top:6px;">
+                <select data-rehab="${p.id}">
+                  <option value="normal" ${p.rehab==="normal"?"selected":""}>正常復健</option>
+                  <option value="fast" ${p.rehab==="fast"?"selected":""}>加速復健（風險↑）</option>
+                  <option value="force" ${p.rehab==="force"?"selected":""}>強行復出（復發↑↑）</option>
+                </select>
+              </div>
+            </td>
           </tr>
         `).join("")}
       </tbody>
     </table>
+
     <div class="hint" style="margin-top:10px;">
-      想更像 NBA：先把各隊完整名單匯入（含板凳），再用交易/自由市場把陣容玩起來。
+      養傷提示：加速/強行可以縮短缺陣，但復發風險會飆。疲勞太高也更容易受傷。
     </div>
   `;
-  $("#panelMain").innerHTML = html;
+
+  $$("select[data-rehab]").forEach(sel=>{
+    sel.onchange = ()=>{
+      const pid = sel.getAttribute("data-rehab");
+      const p = state.players.find(x=>x.id===pid);
+      if(!p) return;
+      p.rehab = sel.value;
+      autosave();
+      log(`🩺 養傷策略：${p.name} → ${sel.value}`);
+      render();
+    };
+  });
 }
 
 function renderLeague(){
@@ -576,10 +783,26 @@ function renderLeague(){
   `;
 }
 
-function sortStandings(a,b){
-  if(b.w!==a.w) return b.w-a.w;
-  const diffA = a.pf-a.pa, diffB = b.pf-b.pa;
-  return diffB-diffA;
+function pickTable(players, ns){
+  return `
+    <table>
+      <thead><tr><th></th><th>球員</th><th>Pos</th><th>OVR</th><th>Salary</th></tr></thead>
+      <tbody>
+        ${players.map(p=>`
+          <tr>
+            <td><input type="checkbox" data-ns="${ns}" value="${p.id}" /></td>
+            <td>${escapeHtml(p.name)} ${p.inj>0?`<span class="tag warn">OUT</span>`:""}</td>
+            <td>${p.pos}</td>
+            <td>${p.ovr}</td>
+            <td>${fmt$(p.salary)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+function selectedIds(ns){
+  return $$(`input[type="checkbox"][data-ns="${ns}"]:checked`).map(x=>x.value);
 }
 
 function renderTrade(){
@@ -609,7 +832,7 @@ function renderTrade(){
       </div>
     </div>
     <div class="hint" style="margin-top:10px;">
-      規則（簡化版）：薪資要大致匹配（±25%），價值差不要太誇張。你想更硬核我也能加：選秀籤、保護條款、交易例外。
+      交易規則（簡化）：薪資需大致匹配（±25%），價值差距不能太誇張。
     </div>
   `;
 
@@ -625,6 +848,10 @@ function renderTrade(){
     const other = $("#selTradeTeam").value;
     const give = selectedIds("give");
     const get = selectedIds("get");
+    if(give.length===0 || get.length===0){
+      $("#tradeMsg").textContent = "請至少各選1人。";
+      return;
+    }
     const res = proposeTrade(give,get,other);
     $("#tradeMsg").innerHTML = res.accept
       ? `<span class="tag good">可接受</span> <span class="muted">價值 ${res.myVal.toFixed(1)} vs ${res.thVal.toFixed(1)}｜薪資 ${fmt$(res.mySal)} vs ${fmt$(res.thSal)}</span>`
@@ -635,88 +862,50 @@ function renderTrade(){
     const other = $("#selTradeTeam").value;
     const give = selectedIds("give");
     const get = selectedIds("get");
-    if(give.length===0 || get.length===0){
-      alert("至少各選 1 名球員。");
-      return;
-    }
+    if(give.length===0 || get.length===0){ alert("至少各選 1 名球員。"); return; }
     const res = proposeTrade(give,get,other);
-    if(!res.accept){
-      alert("交易被拒絕（先按「評估交易」看看原因）。");
-      return;
-    }
+    if(!res.accept){ alert("交易被拒絕（先按「評估交易」看原因）。"); return; }
     executeTrade(give,get,other);
     log(`🤝 交易完成：你送出 ${give.length} 人，換回 ${get.length} 人（對象：${other}）`);
     render();
   };
 }
 
-function pickTable(players, ns){
-  return `
-    <table>
-      <thead><tr><th></th><th>球員</th><th>Pos</th><th>OVR</th><th>Salary</th></tr></thead>
-      <tbody>
-        ${players.map(p=>`
-          <tr>
-            <td><input type="checkbox" data-ns="${ns}" value="${p.id}" /></td>
-            <td>${escapeHtml(p.name)} ${p.inj>0?`<span class="tag warn">傷</span>`:""}</td>
-            <td>${p.pos}</td>
-            <td>${p.ovr}</td>
-            <td>${fmt$(p.salary)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-}
-
-function selectedIds(ns){
-  return $$(`input[type="checkbox"][data-ns="${ns}"]:checked`).map(x=>x.value);
-}
-
 function renderFA(){
   const my = state.myTeam;
   const cap = state.teams.find(t=>t.id===my).cap;
   const pay = payroll(my);
+  const space = cap - pay;
 
   const canSign = (p)=> (pay + p.salary) <= cap;
 
   $("#panelMain").innerHTML = `
-    <h2>自由市場 <span class="tag">薪資空間：${fmt$((cap - pay))}</span></h2>
-    <div class="row" style="margin-bottom:10px;">
-      <button class="primary" id="btnGenFA">刷新市場</button>
-      <span class="muted">（市場每天都會小幅更新；你也可以手動刷新）</span>
+    <h2>自由市場（只允許真實球員） <span class="tag">${space>=0? "空間 "+fmt$(space) : "超帽 "+fmt$(Math.abs(space))}</span></h2>
+    <div class="hint" style="margin-bottom:10px;">
+      這裡不會亂生假名球員。自由球員來源：你匯入的真實 FA 或「到期合約」流入。<br/>
+      你也可以在「匯入名單」額外貼 <span class="tag">TEAM: FA</span> 來匯入真實自由球員名單。
     </div>
+
     <table>
       <thead><tr><th>球員</th><th>Pos</th><th>OVR</th><th>Age</th><th>Salary</th><th></th></tr></thead>
       <tbody>
-        ${state.fa.sort((a,b)=>b.ovr-a.ovr).slice(0,60).map(p=>`
+        ${state.fa
+          .filter(p=>!isFakeName(p.name))
+          .sort((a,b)=>b.ovr-a.ovr)
+          .slice(0,80)
+          .map(p=>`
           <tr>
             <td>${escapeHtml(p.name)}</td>
             <td>${p.pos}</td>
             <td>${p.ovr}</td>
             <td>${p.age}</td>
             <td>${fmt$(p.salary)}</td>
-            <td>
-              <button ${canSign(p) ? "" : "disabled"} data-sign="${p.id}" class="${canSign(p) ? "primary" : ""}">簽下</button>
-            </td>
+            <td><button ${canSign(p) ? "" : "disabled"} data-sign="${p.id}" class="${canSign(p) ? "primary" : ""}">簽下</button></td>
           </tr>
         `).join("")}
       </tbody>
     </table>
-    <div class="hint" style="margin-top:10px;">
-      想更真實：你匯入完整名單後，自由市場可以改成「真實未簽約球員池」，或做雙向合約、10日合約。
-    </div>
   `;
-
-  $("#btnGenFA").onclick = ()=>{
-    for(let i=0;i<12;i++){
-      const fa = P(`Free Agent ${uid().toUpperCase()}` , ["PG","SG","SF","PF","C"][rndi(0,4)], "FA", rndi(68,82), rndi(19,36), rnd(1.0,14.0));
-      fa.years = 1;
-      state.fa.push(fa);
-    }
-    log("🧾 自由市場已刷新。");
-    render();
-  };
 
   $$("button[data-sign]").forEach(btn=>{
     btn.onclick = ()=>{
@@ -727,6 +916,7 @@ function renderFA(){
       p.team = my;
       state.players.push(p);
       state.fa = state.fa.filter(x=>x.id!==pid);
+      autosave();
       log(`✍️ 簽約：${p.name}（${p.pos}，OVR ${p.ovr}，${fmt$(p.salary)}）`);
       render();
     };
@@ -735,23 +925,49 @@ function renderFA(){
 
 function renderImport(){
   $("#panelMain").innerHTML = `
-    <h2>匯入名單（支援多隊）</h2>
+    <h2>匯入名單（強制真實姓名）</h2>
     <div class="hint" style="margin-bottom:10px;">
-      你可以把官方名單（例如 2025-26 開季名單）整理成下列格式貼上。官方也有整理 2025-26 開季各隊名單。<br/>
-      格式：<span class="tag">TEAM: GSW</span> 下一行開始貼球員，每行：<span class="tag">姓名|位置|OVR|年齡|薪資(M)|合約年數</span><br/>
-      例子：<span class="tag">Stephen Curry|PG|93|37|52.0|2</span><br/>
-      貼完按「匯入」。只會替換你有寫 TEAM 的隊伍名單。
+      格式：<span class="tag">TEAM: GSW</span> 然後每行：<span class="tag">姓名|位置|OVR|年齡|薪資(M)|合約年數</span><br/>
+      你必須把 30 隊都匯入（每隊至少 13 人），模擬才會解鎖。<br/><br/>
+      ✅ 匯入自由球員：用 <span class="tag">TEAM: FA</span>（可選）。<br/>
+      ❗只要偵測到「Free Agent / Starter / #1234」之類假名，會直接拒絕匯入。
     </div>
     <textarea id="taImport" rows="14" style="width:100%;"></textarea>
     <div class="row" style="margin-top:10px;">
       <button class="primary" id="btnImport">匯入</button>
-      <button class="ghost" id="btnImportExample">填入範例</button>
+      <button class="ghost" id="btnImportExample">填入範例（示意）</button>
     </div>
   `;
 
   $("#btnImport").onclick = ()=>{
+    const text = $("#taImport").value;
+    // 支援 TEAM: FA
     try{
-      importRoster($("#taImport").value);
+      // 特判：TEAM: FA 的行，進入自由市場
+      const blocks = text.split(/\n---\n|\r\n---\r\n|\r\n---\n|\n---\r\n/);
+      for(const block of blocks){
+        const lines = block.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+        if(lines.length===0) continue;
+        const teamLine = lines.find(l=>/^TEAM\s*:/i.test(l));
+        if(!teamLine) continue;
+        const team = teamLine.split(":")[1].trim().toUpperCase();
+        if(team==="FA"){
+          // import FA: do not remove existing, just add
+          for(const line of lines){
+            if(/^TEAM\s*:/i.test(line)) continue;
+            const parts = line.split("|").map(s=>s.trim());
+            if(parts.length < 6) continue;
+            const [name,pos,ovrS,ageS,salS,yearsS] = parts;
+            if(isFakeName(name)) throw new Error(`偵測到疑似假名：${name}`);
+            const p = P(name,pos,"FA",ovrS,ageS,salS,yearsS);
+            state.fa.push(p);
+          }
+          log("📥 已匯入自由球員（TEAM: FA）。");
+          continue;
+        }else{
+          importRoster(block);
+        }
+      }
       render();
     }catch(e){
       alert(e.message || String(e));
@@ -761,46 +977,40 @@ function renderImport(){
   $("#btnImportExample").onclick = ()=>{
     $("#taImport").value =
 `TEAM: GSW
-Stephen Curry|PG|93|37|52.0|2
+Stephen Curry|PG|96|37|52.0|2
 Draymond Green|PF|82|35|24.0|2
 Klay Thompson|SG|80|35|18.0|1
 Jonathan Kuminga|SF|82|23|12.0|2
+Andrew Wiggins|SF|79|30|26.0|2
 ---
 TEAM: LAL
 LeBron James|SF|92|41|51.0|1
-Anthony Davis|PF|91|32|43.0|2`;
+Anthony Davis|PF|91|32|43.0|2
+Austin Reaves|SG|81|27|13.0|2
+D'Angelo Russell|PG|78|30|18.0|1
+Rui Hachimura|PF|77|28|16.0|2`;
   };
 }
 
-function escapeHtml(s){
-  return s.replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-}
-
-// ---------- Save/Load ----------
-function save(){
-  localStorage.setItem("felis_nba_gm_save", JSON.stringify(state));
-  log("💾 已儲存到本機（localStorage）。");
-}
-function load(){
-  const raw = localStorage.getItem("felis_nba_gm_save");
-  if(!raw){ alert("沒有找到存檔。"); return; }
-  state = JSON.parse(raw);
-  log("📂 已讀取存檔。");
-  render();
-}
-
-// ---------- Wire up ----------
+/* =========================
+   Init & Controls
+========================= */
 function init(){
-  state = newState();
-
-  // seed FA market
-  for(let i=0;i<35;i++){
-    const fa = P(`Free Agent ${uid().toUpperCase()}` , ["PG","SG","SF","PF","C"][rndi(0,4)], "FA", rndi(67,80), rndi(19,35), rnd(1.0,12.0));
-    fa.years = 1;
-    state.fa.push(fa);
+  const raw = localStorage.getItem(SAVE_KEY);
+  if(raw){
+    try{ state = JSON.parse(raw); log("📂 已自動讀取存檔。"); }
+    catch(e){ state = newState(); }
+  }else{
+    state = newState();
   }
 
-  // tabs
+  // if locked team exists, apply
+  const locked = localStorage.getItem(LOCK_KEY);
+  if(locked && TEAMS.some(t=>t.id===locked)){
+    state.myTeam = locked;
+  }
+
+  // Tabs
   $$(".tab").forEach(t=>{
     t.onclick = ()=>{
       $$(".tab").forEach(x=>x.classList.remove("on"));
@@ -810,55 +1020,70 @@ function init(){
     };
   });
 
-  // controls
+  // Team select (only before lock)
   $("#selMyTeam").onchange = (e)=>{
+    const locked = localStorage.getItem(LOCK_KEY);
+    if(locked){
+      e.target.value = locked;
+      alert("球隊已鎖定（除非重置）。");
+      return;
+    }
     state.myTeam = e.target.value;
-    log(`🏀 你現在執掌：${state.myTeam}`);
+    autosave();
+    render();
+  };
+
+  $("#btnLockTeam").onclick = ()=>{
+    const locked = localStorage.getItem(LOCK_KEY);
+    if(locked) return;
+    localStorage.setItem(LOCK_KEY, state.myTeam);
+    log(`🔒 球隊已鎖定：${state.myTeam}（除非重置不可更換）`);
+    autosave();
     render();
   };
 
   $("#btnSim1").onclick = ()=>{ simulateDay(); render(); };
   $("#btnSim7").onclick = ()=>{
+    const gate = ensureCanSim();
+    if(!gate.ok){ alert(gate.msg); return; }
     for(let i=0;i<7;i++) simulateDay();
     render();
   };
+
   $("#btnSimToEnd").onclick = ()=>{
+    const gate = ensureCanSim();
+    if(!gate.ok){ alert(gate.msg); return; }
     while(state.day <= state.schedule.length) simulateDay();
-    log("🏁 季末：你可以按「新賽季」重開或繼續玩交易/重建。");
+    if(!state.playoffsDone) runPlayoffs();
+    autosave();
     render();
   };
 
   $("#btnNewSeason").onclick = ()=>{
-    // simple rollover: reset team records, age players, reduce contract years
-    for(const t of state.teams){ t.w=0; t.l=0; t.pf=0; t.pa=0; }
-    for(const p of state.players){
-      p.age += 1;
-      p.years = Math.max(0, p.years-1);
-      if(p.years===0){
-        p.team = "FA";
-        state.fa.push(p);
-      }
+    // 必須季後賽結束才讓你進休賽季（更像真實）
+    if(!state.playoffsDone){
+      alert("請先模擬到季末並完成季後賽。");
+      return;
     }
-    state.players = state.players.filter(p=>p.team!=="FA");
-    state.schedule = makeSchedule(TEAMS.map(t=>t.id), 82);
-    state.day = 1;
-    log("🗓 新賽季開始：老將衰退、年輕人成長、到期合約進自由市場。");
+    offseasonAdvance();
+    log(`🗓 新賽季開始：${state.season}`);
     render();
   };
 
   $("#btnSave").onclick = save;
   $("#btnLoad").onclick = load;
+
   $("#btnReset").onclick = ()=>{
-    if(confirm("確定重置？會清掉存檔。")){
-      localStorage.removeItem("felis_nba_gm_save");
-      state = newState();
-      log("🧹 已重置。");
-      render();
-    }
+    if(!confirm("確定重置？會清掉鎖定球隊與存檔。")) return;
+    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(LOCK_KEY);
+    state = newState();
+    log("🧹 已重置。");
+    render();
   };
 
   render();
-  log("✅ GM 已啟動：先選隊伍 → 模擬賽季 → 交易補強。");
+  log("✅ 啟動完成：先匯入 30 隊真實名單 → 鎖定球隊 → 開始模擬。");
 }
 
 init();
